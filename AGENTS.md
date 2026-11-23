@@ -21,10 +21,18 @@ Documentation is built *as the project evolves*, not as an afterthought.
    session title and prompt form the top half of the file and are preserved
    verbatim for auditability. Only write in the updates section below it.
    Use `docs/session-prompts/_template.md` when creating a new session prompt.
+   When a dedicated session actually begins executing a prompt, that session is
+   responsible for filling in the current date (`YYYY-MM-DD`) in `**Date:**`
+   and updating `**Status:**`.
 4. **Update `docs/roadmap.md` when capabilities ship:** When a planned item or
    idea is implemented and verified, check it off in `docs/roadmap.md` and link
    to the session prompt(s) that built it.
-5. **Write the *why*, not just the *what*:** Assume the reader does not have
+5. **Create ADRs only when warranted (`docs/decisions/`):** Don't create an ADR
+   folder preemptively. If a durable architectural choice, fork in the road, or
+   contract-level trade-off comes up that warrants a permanent record (an
+   "ADR-level" decision), create `docs/decisions/` and record it as
+   `0001-<slug>.md` (following `discord-hub`'s convention).
+6. **Write the *why*, not just the *what*:** Assume the reader does not have
    this session's context. Record:
    - current status and what changed;
    - discoveries, forks in the road, and decisions made;

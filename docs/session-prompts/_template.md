@@ -1,6 +1,6 @@
 # Session: <Short Title>
 
-**Date:** YYYY-MM-DD  
+**Date:** YYYY-MM-DD *(filled in by the session when work begins)*  
 **Status:** `not-started` | `in-progress` | `complete`
 
 ## Original Prompt (DO NOT EDIT — preserved for auditability)
