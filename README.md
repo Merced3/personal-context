@@ -1,5 +1,7 @@
 # Personal Context
 
+![Personal Context — raw inputs flowing through a shared context prism to downstream tools](assets/cover.jpeg)
+
 **Status:** initial architecture & contract (v0.1 design). No deployment yet.
 
 **Working name:** `personal-context`. Keep the display name out of internal identifiers, database schemas, and API contracts so it can be renamed freely later without breaking consumers.
