@@ -1,7 +1,7 @@
 # Session: 01 — Scaffold & discord-hub Archive Sync
 
-**Date:** *(filled in when session starts)*  
-**Status:** `not-started`
+**Date:** 2026-11-25  
+**Status:** `completed`
 
 ## Original Prompt (DO NOT EDIT — preserved for auditability)
 
@@ -17,16 +17,24 @@
 ## Session Log (Agent-Maintained)
 
 ### Status & What Changed
-- (not started)
+- Completed full scaffold and `discord-hub` Archive API sync foundation:
+  - Package & tooling: `pyproject.toml` (Python 3.13+, Hatchling, SQLAlchemy 2.x, Alembic, `httpx`, `pydantic-settings`, `psycopg[binary]`, plus `pytest`, `pytest-asyncio`, `ruff` dev deps), `.env.example`, `.gitignore`.
+  - Storage layer: `src/context_substrate/config.py`, `src/context_substrate/db.py`, `src/context_substrate/models.py` (`source_records`, `sync_cursors`), and Alembic migrations (`alembic.ini`, `src/context_substrate/migrations/env.py`, `src/context_substrate/migrations/versions/0001_initial_schema.py`).
+  - Sync client: `src/context_substrate/sync/discord_hub.py` (`DiscordHubArchiveClient`, `ArchiveSyncer`, `SyncResult`) consuming `GET /archive/messages` and `GET /archive/events` (ADR 0012).
+  - Offline test suite: `tests/test_migrations.py` and `tests/test_sync_discord_hub.py` using `httpx.MockTransport` and temporary SQLite databases.
 
 ### Decisions & Why
--
+- **Package name `context_substrate` (`src/context_substrate/`):** Keeps the working name `personal-context` out of Python imports, DB tables (`source_records`, `sync_cursors`), and API contracts so renaming stays cheap.
+- **SQLAlchemy 2.x + JSON-serialized `tags_json`/`attachments_json`:** Works identically on SQLite (default for local dev/tests) and Postgres (`postgresql+psycopg://...`) without dialect-specific column hacks in v0.1.
+- **Per-page commits & `cursor_before` checkpointing:** Each page of `/archive/messages` and `/archive/events` is committed alongside its `cursor_before` pointer so an interruption mid-pagination resumes cleanly from the exact next page rather than restarting from scratch.
+- **Dual-path `🔒` lock removal:** `discord-hub` excludes `private=True` rows from both `/archive/messages` and `/archive/events`. To guarantee locked items never linger locally, `ArchiveSyncer` both (1) deletes records immediately if a `reaction_added` event with `🔒` (normalized for `\ufe0f`) arrives, and (2) reconciles local records against the complete non-private set whenever a top-to-bottom `/archive/messages` pass completes, purging any record no longer exposed upstream (while cleanly re-ingesting it if later unlocked).
 
 ### Intentional Weirdness
--
+- **`channel_id = "__all__"` in `sync_cursors`:** When `SYNC_CHANNEL_IDS` is empty and the client calls `/archive/messages` without a `channel_id` filter (syncing all channels granted to its bearer token), the cursor row uses the sentinel `"__all__"` so the unique constraint `(source_system, channel_id, stream)` works cleanly without nullable unique-key differences between SQLite and Postgres.
 
 ### Discoveries / Open Questions
--
+- Inspected `discord-hub/src/discord_hub/archive.py` and `api.py` (read-only) to match the exact ADR 0012 wire format: `/archive/messages` returns `text` (not `content`), `deleted_at`, and `next_before` (int or null); `/archive/events` returns `event_type` values `message_edited`, `message_deleted`, `reaction_added`, `reaction_removed` with `emoji` normalized by stripping `\ufe0f`.
 
 ### Verification
--
+- `.venv/Scripts/pytest -v` -> 5 passed (`test_alembic_upgrade_and_downgrade`, `test_pagination_auth_and_idempotency`, `test_restart_recovery_resumes_from_saved_cursor`, `test_edits_deletes_and_lock_removal_via_events`, `test_lock_removal_via_reconciliation_and_unlock_recovery`).
+- `.venv/Scripts/ruff check src tests` -> All checks passed.

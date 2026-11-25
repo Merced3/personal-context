@@ -10,13 +10,12 @@ it.
 ## Shipped & Verified
 
 - [x] Initial architecture, ownership boundaries, and v1 API contract (`README.md`, `docs/api-contract.md`, `AGENTS.md`).
+- [x] **Scaffold & `discord-hub` archive sync** (`docs/session-prompts/01-scaffold-and-sync.md`) — Package skeleton, config from `.env`, database schema + Alembic migrations, resumable incremental sync from `discord-hub` (`GET /archive/messages`, `GET /archive/events`), and strict `🔒` lock removal.
 
 ---
 
 ## Planned — v0.1 Vertical Slice
 
-- [ ] **Scaffold & `discord-hub` archive sync** — Package skeleton, config from `.env`, database schema, resumable incremental sync from `discord-hub` (`GET /archive/messages`, `GET /archive/events`), and `🔒` lock removal.
-  - *Why:* Establishes the derived local store without touching Discord directly or coupling to `discord-hub`’s database.
 - [ ] **Read & Search HTTP API** — FastAPI service (`GET /health`, `GET /records`, `POST /search`, `POST /sync`) with per-consumer bearer auth and `automation-harness` lifecycle.
   - *Why:* Gives any consumer (`socratic-partner`, `opportunity-runner`, etc.) a clean, source-cited retrieval boundary.
 - [ ] **Rerunnable Projections** — `GET /projections/{name}` (`current_mission`, `time_digest`, `open_decisions`, `book_lenses`) with source record citations and full rebuildability.
