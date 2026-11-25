@@ -34,6 +34,12 @@
 
 ### Discoveries / Open Questions
 - Inspected `discord-hub/src/discord_hub/archive.py` and `api.py` (read-only) to match the exact ADR 0012 wire format: `/archive/messages` returns `text` (not `content`), `deleted_at`, and `next_before` (int or null); `/archive/events` returns `event_type` values `message_edited`, `message_deleted`, `reaction_added`, `reaction_removed` with `emoji` normalized by stripping `\ufe0f`.
+- **Known test gaps (critical self-review of Session 01 tests):**
+  1. **Mocked HTTP vs. live `discord-hub`:** Tests use `httpx.MockTransport` with hand-written JSON fixtures. If `discord-hub` returns unexpected field types, forum-post/thread shapes (`parent_channel_id` + `thread_title`), or auth errors in production, offline tests won't catch it (deferred to Session 04 live acceptance).
+  2. **SQLite only, no Postgres test:** Migrations and queries are only exercised against SQLite; Postgres is stricter about timezone-aware timestamps, types, and constraints.
+  3. **No event-pagination / watermark test:** We tested multi-page pagination and restart recovery for `/archive/messages`, but `/archive/events` was only tested on a single page — we didn't directly test multi-page event pagination or stopping at `last_seen_id` on an incremental event sync.
+  4. **No thread/forum-post provenance test:** `_upsert_message` derives `thread_id` when `parent_channel_id != channel_id` and falls back to `parent_channel_id` for `source_name`, but none of the 5 tests pass a non-null `parent_channel_id` to verify that path.
+  5. **No mid-sync concurrent-write or large-channel test:** We didn't test what happens if a new message arrives *while* a multi-page sync is halfway through, or reconciliation performance on very large channels.
 
 ### Verification
 - `.venv/Scripts/pytest -v` -> 5 passed (`test_alembic_upgrade_and_downgrade`, `test_pagination_auth_and_idempotency`, `test_restart_recovery_resumes_from_saved_cursor`, `test_edits_deletes_and_lock_removal_via_events`, `test_lock_removal_via_reconciliation_and_unlock_recovery`).
