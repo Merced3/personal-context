@@ -12,6 +12,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.orm import Session, sessionmaker
 
 from context_substrate.models import SourceRecord, SyncCursor
+from context_substrate.projections import invalidate_projections_citing
 
 SOURCE_SYSTEM = "discord-hub"
 LOCK_EMOJI = "🔒"
@@ -394,7 +395,9 @@ class ArchiveSyncer:
 
         if event_type == "reaction_added" and _is_lock_emoji(event.get("emoji")):
             if record is not None:
+                removed_id = record.id
                 session.delete(record)
+                invalidate_projections_citing(session, [removed_id])
                 return 1
             return 0
 
@@ -447,5 +450,6 @@ class ArchiveSyncer:
             if not stale_ids:
                 return 0
             session.execute(delete(SourceRecord).where(SourceRecord.id.in_(stale_ids)))
+            invalidate_projections_citing(session, stale_ids)
             session.commit()
             return len(stale_ids)

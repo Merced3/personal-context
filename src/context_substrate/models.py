@@ -68,3 +68,22 @@ class SyncCursor(Base):
     last_synced_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+
+
+class ProjectionRecord(Base):
+    """A rerunnable, evidence-backed distillation stored over synced source records."""
+
+    __tablename__ = "projections"
+    __table_args__ = (
+        UniqueConstraint("name", "cache_key", name="uq_projection_name_cache_key"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    cache_key: Mapped[str] = mapped_column(String(255), nullable=False)
+    version: Mapped[str] = mapped_column(String(32), nullable=False)
+    generated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    model: Mapped[str] = mapped_column(String(128), nullable=False)
+    data_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    source_record_ids_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+

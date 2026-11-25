@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from context_substrate.api.auth import build_auth_dependency
 from context_substrate.api.schemas import (
     HealthResponse,
+    ProjectionResponse,
     RecordItem,
     RecordsResponse,
     SearchHit,
@@ -25,6 +26,12 @@ from context_substrate.api.schemas import (
 )
 from context_substrate.config import Settings
 from context_substrate.models import SourceRecord, SyncCursor
+from context_substrate.projections import (
+    ProjectionEngine,
+    ProjectionExtractor,
+    ProjectionNotFoundError,
+    ProjectionParameterError,
+)
 from context_substrate.search import TextEmbedder, hybrid_rank
 from context_substrate.sync.discord_hub import ArchiveSyncer, DiscordHubArchiveClient
 
@@ -86,6 +93,8 @@ def create_app(
     *,
     syncer: ArchiveSyncer | None = None,
     embedder: TextEmbedder | None = None,
+    projection_extractor: ProjectionExtractor | None = None,
+    projection_engine: ProjectionEngine | None = None,
     sync_lock: asyncio.Lock | None = None,
 ) -> FastAPI:
     """Create and configure the FastAPI application."""
@@ -96,6 +105,10 @@ def create_app(
 
     require_consumer = build_auth_dependency(settings.consumer_tokens)
     active_sync_lock = sync_lock or asyncio.Lock()
+    active_projection_engine = projection_engine or ProjectionEngine(
+        session_factory,
+        extractor=projection_extractor,
+    )
 
     @app.get("/health", response_model=HealthResponse)
     def health() -> HealthResponse:
@@ -218,5 +231,34 @@ def create_app(
             synced_messages=result.synced_messages,
             synced_events=result.synced_events,
         )
+
+    @app.get("/projections/{name}", response_model=ProjectionResponse)
+    def get_projection(
+        name: str,
+        _consumer: str = Depends(require_consumer),  # noqa: B008
+        days: int | None = Query(default=None, ge=1, le=3650),  # noqa: B008
+        since: datetime | None = None,
+        until: datetime | None = None,
+        refresh: bool = False,
+    ) -> ProjectionResponse:
+        try:
+            proj = active_projection_engine.get_projection(
+                name,
+                days=days,
+                since=since,
+                until=until,
+                refresh=refresh,
+            )
+        except ProjectionNotFoundError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(exc),
+            ) from exc
+        except ProjectionParameterError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(exc),
+            ) from exc
+        return ProjectionResponse.from_orm_projection(proj)
 
     return app

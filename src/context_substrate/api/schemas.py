@@ -8,7 +8,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from context_substrate.models import SourceRecord
+from context_substrate.models import ProjectionRecord, SourceRecord
 
 
 def format_utc(dt: datetime | None) -> str | None:
@@ -83,3 +83,25 @@ class SearchResponse(BaseModel):
 class SyncResponse(BaseModel):
     synced_messages: int
     synced_events: int
+
+
+class ProjectionResponse(BaseModel):
+    name: str
+    version: str
+    generated_at: str
+    model: str
+    data: dict[str, Any]
+    source_record_ids: list[str]
+
+    @classmethod
+    def from_orm_projection(cls, proj: ProjectionRecord) -> ProjectionResponse:
+        return cls(
+            name=proj.name,
+            version=proj.version,
+            generated_at=format_utc(proj.generated_at) or "",
+            model=proj.model,
+            data=json.loads(proj.data_json) if proj.data_json else {},
+            source_record_ids=(
+                json.loads(proj.source_record_ids_json) if proj.source_record_ids_json else []
+            ),
+        )
