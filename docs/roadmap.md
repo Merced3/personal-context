@@ -11,13 +11,12 @@ it.
 
 - [x] Initial architecture, ownership boundaries, and v1 API contract (`README.md`, `docs/api-contract.md`, `AGENTS.md`).
 - [x] **Scaffold & `discord-hub` archive sync** (`docs/session-prompts/01-scaffold-and-sync.md`) — Package skeleton, config from `.env`, database schema + Alembic migrations, resumable incremental sync from `discord-hub` (`GET /archive/messages`, `GET /archive/events`), and strict `🔒` lock removal.
+- [x] **Read & Search HTTP API** (`docs/session-prompts/02-records-and-search-api.md`) — FastAPI service (`GET /health`, `GET /records`, `POST /search`, `POST /sync`) with per-consumer bearer auth, hybrid keyword + semantic retrieval, and `automation-harness` lifecycle.
 
 ---
 
 ## Planned — v0.1 Vertical Slice
 
-- [ ] **Read & Search HTTP API** — FastAPI service (`GET /health`, `GET /records`, `POST /search`, `POST /sync`) with per-consumer bearer auth and `automation-harness` lifecycle.
-  - *Why:* Gives any consumer (`socratic-partner`, `opportunity-runner`, etc.) a clean, source-cited retrieval boundary.
 - [ ] **Rerunnable Projections** — `GET /projections/{name}` (`current_mission`, `time_digest`, `open_decisions`, `book_lenses`) with source record citations and full rebuildability.
   - *Why:* Lets consumers pull structured, up-to-date distillations without every consumer re-implementing summarization over raw logs.
 - [ ] **Live Acceptance & Deployment** — Verify real sync + `🔒` exclusion against `discord-hub` (using `Automations/ops/LAB.md`), deploy alongside the other services, and register in `ops/PROJECTS.md`.
