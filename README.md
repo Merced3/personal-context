@@ -10,6 +10,16 @@ Read with [`Automations/OVERVIEW.md`](../../OVERVIEW.md), [`Automations/PRINCIPL
 
 ---
 
+## Why this exists
+
+Over time, you document your life—goals, timeline entries, books, ideas, beliefs, decisions, and reflections—across different forms of documentation (currently Discord channels and forums). Raw chat history is great for capturing thoughts in the moment, but it is hard for downstream tools to search, synthesize, or reason over reliably.
+
+If every app (`socratic-partner`, `opportunity-runner`, `teaching-agent`, etc.) tried to read raw text history on its own, each one would duplicate syncing, search, privacy filtering, and summarization—and each would end up with its own slightly different, inconsistent picture of your context.
+
+`personal-context` exists so you build that **shared memory layer once**: one place that keeps your personal history searchable, respects whatever privacy locks you use (currently a `🔒` reaction on Discord messages you don't want stored or surfaced), and produces clean, source-cited summaries that any tool can use without baking any single app’s opinions into the data.
+
+At its core, most of these projects are personal: to serve you well, they need to understand your preferences, history, and direction. Whenever a tool needs to know what you care about—or choose the right direction for an action—it can query `personal-context` to retrieve and synthesize your own documented context rather than guessing.
+
 ## Purpose
 
 `personal-context` is the **Personal Context Substrate** for the Automations ecosystem.

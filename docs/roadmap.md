@@ -13,13 +13,16 @@ it.
 - [x] **Scaffold & `discord-hub` archive sync** (`docs/session-prompts/01-scaffold-and-sync.md`) — Package skeleton, config from `.env`, database schema + Alembic migrations, resumable incremental sync from `discord-hub` (`GET /archive/messages`, `GET /archive/events`), and strict `🔒` lock removal.
 - [x] **Read & Search HTTP API** (`docs/session-prompts/02-records-and-search-api.md`) — FastAPI service (`GET /health`, `GET /records`, `POST /search`, `POST /sync`) with per-consumer bearer auth, hybrid keyword + semantic retrieval, and `automation-harness` lifecycle.
 - [x] **Rerunnable Projections** (`docs/session-prompts/03-projections.md`) — `GET /projections/{name}` (`current_mission`, `time_digest`, `open_decisions`, `book_lenses`) with source record citations, strict citation integrity, `🔒` lock invalidation/rebuild, and full rebuildability from synced records.
+- [x] **Live Acceptance & Deployment** (`docs/session-prompts/04-live-sync-and-deploy.md`) — Provisioned `personal-context` archive reader token in `discord-hub`, verified live incremental sync + cursor resume + `🔒` lock/unlock exclusion + cited projections against real archive data, wired production deployment (`Dockerfile`, `ops/hosts/personal-context/compose.yml`, `ops/infra/inventory.sh`, `ops/server/healthcheck.sh`, `ops/data-platform/data_platform.py`), and registered in `ops/PROJECTS.md`.
 
 ---
 
-## Planned — v0.1 Vertical Slice
+## Planned — Production Rollout & Consumer #1
 
-- [ ] **Live Acceptance & Deployment** — Verify real sync + `🔒` exclusion against `discord-hub` (using `Automations/ops/LAB.md`), deploy alongside the other services, and register in `ops/PROJECTS.md`.
-  - *Why:* Proves the substrate works end-to-end on real data before wiring Consumer #1 (`socratic-partner`).
+- [ ] **Provision Postgres & Deploy Droplet** — When ready to wire Consumer #1 (`socratic-partner`):
+  1. Seed `personal_context` + `harness_personal_context` in Managed PostgreSQL via `ops/data-platform/data_platform.py`.
+  2. Provision the `automations-personal-context` droplet using `ops/hosts/personal-context/compose.yml` and `ops/env/personal-context.env.example` (so `socratic-partner` can query `http://automations-personal-context:8010` over Tailscale 24/7).
+  - *Why:* Deferred until Consumer #1 is ready so a droplet isn’t sitting idle beforehand.
 
 ---
 
