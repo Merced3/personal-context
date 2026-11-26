@@ -19,10 +19,7 @@ it.
 
 ## Planned — Production Rollout & Consumer #1
 
-- [ ] **Provision Postgres & Deploy Droplet** — When ready to wire Consumer #1 (`socratic-partner`):
-  1. Seed `personal_context` + `harness_personal_context` in Managed PostgreSQL via `ops/data-platform/data_platform.py`.
-  2. Provision the `automations-personal-context` droplet using `ops/hosts/personal-context/compose.yml` and `ops/env/personal-context.env.example` (so `socratic-partner` can query `http://automations-personal-context:8010` over Tailscale 24/7).
-  - *Why:* Deferred until Consumer #1 is ready so a droplet isn’t sitting idle beforehand.
+- [x] **Provision Postgres & Deploy Droplet** (`docs/session-prompts/05-deploy-vps-and-tailscale.md`) — Provisioned `personal_context` + `harness_personal_context` in Managed PostgreSQL (`automations-data`, `nyc3`), deployed the `$6` `automations-personal-context` droplet over Tailscale (`:8010`) with `tag:personal-context` grants and `socratic-partner` bearer token, synced `1,076` records from `discord-hub`, and verified cross-host reachability from `socratic-partner`.
 
 ---
 
